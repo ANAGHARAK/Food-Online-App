@@ -30,7 +30,11 @@
 																		<li class="gal-img">
 																			<div class="drag-list">
 																				<div class="item-thumb">
-																					<img class="thumbnail" src="{{profile.profile_picture.url}}" alt="profile picture">
+																					{% if profile.profile_picture %}
+																						<img class="thumbnail" src="{{profile.profile_picture.url}}" alt="profile picture">
+																					{%else %}
+																						<img class="thumbnail" src="{% static 'images/default-profile.png' %}" alt="Profile photo">
+																					{% endif %}
 																				</div>
 																			</div>
 																		</li>
@@ -52,8 +56,12 @@
 																		<li class="gal-img">
 																			<div class="drag-list">
 																				<div class="item-thumb">
-																					<img class="thumbnail" src="{{profile.cover_photo.url}}" alt="cover photo">
-																				</div>
+																					{% if profile.cover_photo %}
+																						<img class="thumbnail" src="{{profile.cover_photo.url}}" alt="cover photo">
+																					{%else %}
+																						<img class="thumbnail" src="{% static 'images/default-cover.png' %}" alt="Cover photo">
+																					{% endif %}
+																		     	</div>
 																			</div>
 																		</li>
 																	</ul>
@@ -62,7 +70,7 @@
 																	<label>Update Cover Photo</label>
 																	<div class="upload-gallery">
 																		{{profile_form.cover_photo}}
-																	</div>
+																		</div>
 																	
 																</div>
 																<label class="text-danger">{{profile_form.profile_picture.errors}}</label>
