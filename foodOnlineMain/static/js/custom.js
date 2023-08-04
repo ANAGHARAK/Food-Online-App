@@ -98,9 +98,8 @@ $(document).ready(function () {
           applyCartAmounts(
             response.cart_amount['subtotal'],
             response.cart_amount['tax'],
-            response.cart_amount['grand_total'],
-          )
-
+            response.cart_amount['grand_total']
+          );
         }
       },
     });
@@ -137,8 +136,8 @@ $(document).ready(function () {
           applyCartAmounts(
             response.cart_amount['subtotal'],
             response.cart_amount['tax'],
-            response.cart_amount['grand_total'],
-          )
+            response.cart_amount['grand_total']
+          );
 
           if (window.location.pathname == '/cart/') {
             removeCartItem(response.qty, cart_id);
@@ -170,8 +169,8 @@ $(document).ready(function () {
           applyCartAmounts(
             response.cart_amount['subtotal'],
             response.cart_amount['tax'],
-            response.cart_amount['grand_total'],
-          )
+            response.cart_amount['grand_total']
+          );
 
           removeCartItem(0, cart_id);
           checkEmptyCart();
@@ -182,13 +181,11 @@ $(document).ready(function () {
 
   //delete the cart elemrnt if the qty is 0
   function removeCartItem(cartItemQty, cart_id) {
-    
-      if (cartItemQty <= 0) {
-        //remove the cart item element
-        document.getElementById('cart-item-' + cart_id).remove();
-      }
+    if (cartItemQty <= 0) {
+      //remove the cart item element
+      document.getElementById('cart-item-' + cart_id).remove();
     }
-  
+  }
 
   //Check if the cart is empty
   function checkEmptyCart() {
@@ -198,12 +195,97 @@ $(document).ready(function () {
     }
   }
 
-  function applyCartAmounts(subtotal,tax,grand_total){
-    if(window.location.pathname=='/cart/'){
-      $('#subtotal').html(subtotal)
-      $('#tax').html(tax)
-      $('#total').html(grand_total)
+  function applyCartAmounts(subtotal, tax, grand_total) {
+    if (window.location.pathname == '/cart/') {
+      $('#subtotal').html(subtotal);
+      $('#tax').html(tax);
+      $('#total').html(grand_total);
     }
-    
   }
+
+  //ADD OPENING HOUR
+  $('.add_hour').on('click', function (e) {
+    e.preventDefault();
+    var day = document.getElementById('id_day').value;
+    var from_hour = document.getElementById('id_from_hour').value;
+    var to_hour = document.getElementById('id_to_hour').value;
+    var is_closed = document.getElementById('id_is_closed').checked;
+    var csrf_token = $('input[name=csrfmiddlewaretoken]').val();
+    var url = document.getElementById('add_hour_url').value;
+
+    console.log(day, from_hour, to_hour, is_closed, csrf_token);
+
+    if (is_closed) {
+      is_closed = 'True';
+      condition = "day!=''";
+    } else {
+      is_closed = 'False';
+      condition = "day!='' && from_hour!='' && to_hour!=''";
+    }
+    if (eval(condition)) {
+      $.ajax({
+        type: 'POST',
+        url: url,
+        data: {
+          day: day,
+          from_hour: from_hour,
+          to_hour: to_hour,
+          is_closed: is_closed,
+          csrfmiddlewaretoken: csrf_token,
+        },
+        success: function (response) {
+          if (response.status == 'success') {
+            if (response.is_closed == 'Closed') {
+              html =
+                '<tr id="hour-' +
+                response.id +
+                '"><td><b>' +
+                response.day +
+                '</b></td><td>Closed</td><td><a href="#" class="remove_hour" data-url="/vendor/opening-hours/remove/' +
+                response.id +
+                '/">Remove</a></td></tr>';
+            } else {
+              html =
+                '<tr id="hour-' +
+                response.id +
+                '"><td><b>' +
+                response.day +
+                '</b></td><td>' +
+                response.from_hour +
+                ' - ' +
+                response.to_hour +
+                '</td><td><a href="#" class="remove_hour" data-url="/vendor/opening-hours/remove/' +
+                response.id +
+                '/">Remove</a></td></tr>';
+            }
+            $('.opening_hours').append(html);
+            document.getElementById('opening_hours').reset();
+          } else {
+            swal(response.message, '', 'error');
+          }
+        },
+      });
+    } else {
+      console.log(response.error);
+      swal('Please fill all the fields', '', 'info');
+    }
+  });
+  //REMOVE OPENING HOUR
+
+  $(document).on('click', '.remove_hour', function (e) {
+    e.preventDefault();
+    url = $(this).attr('data-url');
+
+    $.ajax({
+      type: 'GET',
+      url: url,
+      success: function (response) {
+        if (response.status == 'success') {
+          document.getElementById('hour-' + response.id).remove();
+        }
+      },
+    });
+  });
+
+  //document ready close
 });
